@@ -7,21 +7,28 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Help Me!</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 
 <body>
     <div class="container">
-        <div class="form">
-            <form onsubmit="return false;">
-            <div class="form-group">
-                <label for="select-orgType">Organization Type</label>
-                <select name="orgType" id="select-orgType"></select>
-            </div>
-            <div class="form-group">
-                    <label for="input-orgName">Organization Name</label>
-                    <input type="text" name="" id="orgName">
+        <div class="row">
+            <div class="col-12 col-md-7">
+                <div class="form">
+                    <form onsubmit="return false;">
+                        <div class="form-group ">
+                            <select name="orgType" id="select-orgType" class="form-control">
+                                <option value="default" default disabled selected>Organization Type</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-orgName">Organization Name</label>
+                            <input type="text" name="" id="orgName" class="form-control" placeholder="Organization">
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
