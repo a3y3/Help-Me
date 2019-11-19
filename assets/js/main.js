@@ -31,16 +31,14 @@ $(function () {
             return orgTypes;
         }
 
-        function setStates() {
-            let url = `/States`;
+        function setSelectSingle(url, select, field){
             $.ajax({
                 "url": proxy_url,
                 "data": { path: url },
                 "success": function (data) {
-                    let states = parseStates(data);
-                    let select = $("#select-states");
-                    $.each(states, function (i) {
-                        select.append($("<option></option>").attr("value", states[i]).text(states[i]));
+                    let fields = parseXmlDataSingle(data, field);
+                    $.each(fields, function (i) {
+                        select.append($("<option></option>").attr("value", fields[i]).text(fields[i]));
                     });
                 },
                 "error": function (xhr, data, err) {
@@ -48,19 +46,35 @@ $(function () {
                 }
             });
         }
+        
 
-        function parseStates(xmlData) {
+        function parseXmlDataSingle(xmlData, field) {
             let states = []
             $("row", xmlData).each(function (data) {
-                let state = $("State", this).text();
+                let state = $(field, this).text();
                 states.push(state);
             });
             return states;
         }
 
+        function setStates() {
+            let url = `/States`;
+            let select = $("#select-states");
+            let fieldName = "State";
+            setSelectSingle(url, select, fieldName);
+        }
+
+        function setCities(){
+            let url = `/Cities`;
+            let select = $("#select-cities");
+            let fieldName = "city";
+            setSelectSingle(url, select, fieldName);
+        }
+
         function initForm() {
             setOrgTypes();
             setStates();
+            setCities();
         }
         return {
             init: function () {
