@@ -83,8 +83,9 @@ $(function () {
         function handleSearch() {
             $("#form-search").on("submit", function (event) {
                 event.preventDefault();
-                //First, clear prev results
+                //First, clear prev results and details.
                 $("#search-results").children().remove();
+                $("#details-ui").children().remove();
                 let h3 = document.createElement("h3");
                 h3.append(document.createTextNode("Search Results"));
                 $("#search-results").append(h3);
@@ -133,7 +134,7 @@ $(function () {
                         btn.append(results[i]);
                         let access_link = proxy_url;
                         access_link += "?path=";
-                        access_link += "/Application/Tabs?orgId="+id;
+                        access_link += "/Application/Tabs?orgId=" + id;
                         btn.setAttribute("data-href", access_link);
                         btn.setAttribute("href", "#");
                         $(btn).addClass("link-get-tabs");
@@ -171,23 +172,83 @@ $(function () {
             return table;
         }
 
-        function addTabsListener(){
-            $(document).on("click", ".link-get-tabs", function(e){
+        function addTabsListener() {
+            $(document).on("click", ".link-get-tabs", function (e) {
                 e.preventDefault();
                 let orgLink = $(this).data("href");
                 showDetails(orgLink);
             });
         }
 
-        function showDetails(orgLink){
-            console.log("Received link", orgLink);
-            $("#details-ui").children().remove();
+        function showDetails(orgLink) {
+            //Clear results
+            $("#search-results").children().remove();
+            addDetailsBoilerplate();
+            getTabs(orgLink);
+        }
+
+        function addDetailsBoilerplate() {
+            let detailsUI = $("#details-ui");
+            detailsUI.children().remove();
             let h3 = document.createElement("h3");
             h3.append(document.createTextNode("Details"));
-            $("details-ui").append(h3);
-
-            
+            detailsUI.append(h3);
+            let div = document.createElement("div");
+            $(div).attr("id", "tabs");
+            detailsUI.append(div);
         }
+
+        function getTabs(url) {
+            $.ajax({
+                "url": url,
+                success: function (data) {
+                    console.log(data);
+                    buildTabs(data);
+                }
+            });
+        }
+
+        function buildTabs(data) {
+            let ul = getUlForData(data);
+            $("#tabs").append(ul);
+            let arrayOfDivs = getDivContentFordata(data);
+            arrayOfDivs.forEach(function (div) {
+                $("#tabs").append(div);
+            });
+            $("#tabs").tabs();
+        }
+
+        function getUlForData(data) {
+            let ul = document.createElement("ul");
+            $("row", data).each(function () {
+                let organization = document.createTextNode($(this).text());
+    
+                let link = document.createElement("a");
+                link.setAttribute("href", "#" + $(this).text());
+                link.append(organization);
+    
+                let li = document.createElement("li");
+                li.append(link);
+    
+                ul.append(li);
+            });
+            return ul;
+        }
+
+        function getDivContentFordata(data) {
+            let divs = [];
+            $("row", data).each(function () {
+                let org = $(this).text();
+                let div = document.createElement("div");
+                div.setAttribute("id", org);
+                let content = document.createTextNode(`You are viewing data for ${org}`);   //Modify this later with AJAX; not required for this hw
+                div.append(content);
+    
+                divs.push(div);
+            });
+            return divs;
+        }
+
         return {
             init: function () {
                 // init data members
