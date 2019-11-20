@@ -109,11 +109,12 @@ $(function () {
         }
 
         function showInTable(data) {
+            console.log(data);
             let table = getTable();
             $("row", data).each(function () {
                 let tr = document.createElement("tr");
                 let results = []
-                // results.push($("OrganizationID", this).text());
+                let id = $("OrganizationID", this).text();
                 results.push($("type", this).text());
                 results.push($("Name", this).text());
                 results.push($("city", this).text());
@@ -122,7 +123,18 @@ $(function () {
                 results.push($("State", this).text());
                 $(results).each(function (i) {
                     let td = document.createElement("td");
-                    td.append(results[i]);
+                    if (i === 1) {
+                        let link = document.createElement("a");
+                        link.append(results[i]);
+                        let access_link = proxy_url;
+                        access_link += "?path=";
+                        access_link += "/Application/Tabs?orgId="+id;
+                        link.setAttribute("href", access_link);
+                        td.append(link);
+                    }
+                    else {
+                        td.append(results[i]);
+                    }
                     tr.append(td);
                 });
                 table.append(tr);
@@ -157,7 +169,7 @@ $(function () {
             }
         }
 
-        function addNotFound(div){
+        function addNotFound(div) {
             let text = document.createTextNode("No results found");
             div.append(text);
         }
