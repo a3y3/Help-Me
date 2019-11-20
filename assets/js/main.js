@@ -84,7 +84,10 @@ $(function () {
             $("#form-search").on("submit", function (event) {
                 event.preventDefault();
                 //First, clear prev results
-                $("#search-results").children().not(":first").remove();
+                $("#search-results").children().remove();
+                let h3 = document.createElement("h3");
+                h3.append(document.createTextNode("Search Results"));
+                $("#search-results").append(h3);
 
                 let params = $(this).serialize();
                 let searchUrl = "/Organizations";
@@ -109,8 +112,9 @@ $(function () {
         }
 
         function showInTable(data) {
-            console.log(data);
             let table = getTable();
+            let tbody = document.createElement("tbody");
+            table.append(tbody);
             $("row", data).each(function () {
                 let tr = document.createElement("tr");
                 let results = []
@@ -123,42 +127,66 @@ $(function () {
                 results.push($("State", this).text());
                 $(results).each(function (i) {
                     let td = document.createElement("td");
+                    $(td).addClass("text-center");
                     if (i === 1) {
-                        let link = document.createElement("a");
-                        link.append(results[i]);
+                        let btn = document.createElement("button");
+                        btn.append(results[i]);
                         let access_link = proxy_url;
                         access_link += "?path=";
                         access_link += "/Application/Tabs?orgId="+id;
-                        link.setAttribute("href", access_link);
-                        td.append(link);
+                        btn.setAttribute("data-href", access_link);
+                        btn.setAttribute("href", "#");
+                        $(btn).addClass("link-get-tabs");
+                        $(btn).addClass("btn btn-link");
+                        td.append(btn);
                     }
                     else {
                         td.append(results[i]);
                     }
                     tr.append(td);
                 });
-                table.append(tr);
+                tbody.append(tr);
             });
             $("#search-results").append(table);
+            $("#table-search-results").tablesorter();
         }
 
         function getTable() {
             let table = document.createElement("table");
+            table.setAttribute("id", "table-search-results");
             let thead = document.createElement("thead");
-            let tbody = document.createElement("tbody");
+            let tr_thead = document.createElement("tr"); //Must be a <tr> inside thead
+            thead.append(tr_thead);
             let headers = ["Type", "Name", "City", "Zip", "County", "State"];
             $(headers).each(function (i) {
                 let th = document.createElement("th");
+                $(th).addClass("text-center")
                 th.append(headers[i]);
-                thead.append(th);
+                tr_thead.append(th);
             });
             table.append(thead);
-            table.append(tbody);
 
-            $(table).addClass("table");
+            $(table).addClass("table table-dark");
             $(table).addClass("table-striped")
-            $(thead).addClass("thead-dark");
             return table;
+        }
+
+        function addTabsListener(){
+            $(document).on("click", ".link-get-tabs", function(e){
+                e.preventDefault();
+                let orgLink = $(this).data("href");
+                showDetails(orgLink);
+            });
+        }
+
+        function showDetails(orgLink){
+            console.log("Received link", orgLink);
+            $("#details-ui").children().remove();
+            let h3 = document.createElement("h3");
+            h3.append(document.createTextNode("Details"));
+            $("details-ui").append(h3);
+
+            
         }
         return {
             init: function () {
@@ -166,6 +194,7 @@ $(function () {
                 proxy_url = `https://people.rit.edu/dmgics/754/23/proxy.php`;
                 initForm();
                 handleSearch();
+                addTabsListener();
             }
         }
 
