@@ -241,8 +241,8 @@ $(function () {
                 let div = document.createElement("div");
                 div.setAttribute("id", org);
                 let contentDiv = document.createElement("div");
+                div.append(contentDiv);
                 if (org === "General") {
-                    contentDiv.setAttribute("id", "content-general");
                     let name = document.createElement("p");
                     name.setAttribute("id", "p-general-name");
                     let email = document.createElement("p");
@@ -258,25 +258,34 @@ $(function () {
                     let serviceArea = document.createElement("p");
                     serviceArea.setAttribute("id", "p-general-serviceArea");
                     let contents = [name, email, website, description, nummembers, numcalls, serviceArea];
-                    $(contents).each(function(i){
+                    $(contents).each(function (i) {
                         contentDiv.append(contents[i]);
                     });
-                    setGeneralInfo(id);
+                    setGeneralInfo(id, contentDiv);
                 }
-                div.append(contentDiv);
-
+                else if (org === "Treatment") {
+                    contentDiv.setAttribute("id", "div-content-treatment");
+                    setTreatmentInfo(id, contentDiv);
+                }
+                else if (org === "Training") {
+                    contentDiv.setAttribute("id", "div-content-training");
+                    setTrainingInfo(id, contentDiv);
+                }
+                else if (org === "Facilities") {
+                    contentDiv.setAttribute("id", "div-content-facilities");
+                    setFacilitiesInfo(id, contentDiv);
+                }
                 divs.push(div);
             });
             return divs;
         }
 
-        function setGeneralInfo(id) {
+        function setGeneralInfo(id, contentDiv) {
             let url = `/${id}/General`;
             $.ajax({
                 "url": proxy_url,
                 "data": { path: url },
                 "success": function (data) {
-                    console.log(data);
                     let name = $("name", data).text(),
                         email = $("email", data).text(),
                         website = $("website", data).text(),
@@ -291,6 +300,88 @@ $(function () {
                     $("#p-general-nummembers").html(`Number of Members: ${nummembers}`);
                     $("#p-general-numcalls").html(`Number of calls last year: ${numcalls}`);
                     $("#p-general-serviceArea").html(`Service Area: ${serviceArea}`);
+                },
+                "error": function (xhr, data, err) {
+                    console.error(`Error:`, xhr, data, err);
+                }
+            });
+        }
+
+        function setTreatmentInfo(id, contentDiv) {
+            let url = `/${id}/Treatments`;
+            $.ajax({
+                "url": proxy_url,
+                "data": { path: url },
+                "success": function (data) {
+                    $("treatment", data).each(function (i) {
+                        let type = $("type", $("treatment", data)[i]).text()
+                        let abbreviation = $("abbreviation", $("treatment", data)[i]).text()
+                        let p = document.createElement("p");
+                        $(p).html(`${type}: <b>${abbreviation}</b>`);
+                        contentDiv.append(p);
+                    });
+                },
+                "error": function (xhr, data, err) {
+                    console.error(`Error:`, xhr, data, err);
+                }
+            });
+        }
+
+        function setTrainingInfo(id, contentDiv) {
+            let url = `/${id}/Training`;
+            $.ajax({
+                "url": proxy_url,
+                "data": { path: url },
+                "success": function (data) {
+                    $("training", data).each(function (i) {
+                        let type = $("type", $("training", data)[i]).text();
+                        let abbreviation = $("abbreviation", $("training", data)[i]).text();
+                        let p = document.createElement("p");
+                        $(p).html(`${type}: <b>${abbreviation}</b>`);
+                        contentDiv.append(p);
+                    });
+                },
+                "error": function (xhr, data, err) {
+                    console.error(`Error:`, xhr, data, err);
+                }
+            });
+        }
+
+        function setFacilitiesInfo(id, contentDiv) {
+            let url = `/${id}/Facilities`;
+            let table = document.createElement("table");
+            $(table).addClass("table");
+            contentDiv.append(table);
+            let thead = document.createElement("thead");
+            table.append(thead);
+            let headers = ["Name", "Quantity", "Description"];
+            $.each(headers, function (index, header) {
+                let th = document.createElement("th");
+                thead.append(th);
+                th.append(header);
+            });
+            let tbody = document.createElement("tbody");
+            table.append(tbody);
+            $.ajax({
+                "url": proxy_url,
+                "data": { path: url },
+                "success": function (data) {
+                    $("facility", data).each(function (i) {
+                        let tr = document.createElement("tr");
+                        let type = $("type", $("facility", data)[i]).text();
+                        let quantity = $("quantity", $("facility", data)[i]).text();
+                        let description = $("description", $("facility", data)[i]).text();
+                        let td = document.createElement("td");
+                        td.append(type);
+                        tr.append(td);
+                        td = document.createElement("td");
+                        td.append(quantity)
+                        tr.append(td);
+                        td = document.createElement("td");
+                        td.append(description);
+                        tr.append(td);
+                        tbody.append(tr);
+                    });
                 },
                 "error": function (xhr, data, err) {
                     console.error(`Error:`, xhr, data, err);
