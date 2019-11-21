@@ -6,13 +6,18 @@ body {
     margin-top: 25px;
 }
 
+.link-blue {
+    color: #007bff !important;
+}
+
 .hidden {
     display: none;
 }
 
-.text-center{
+.text-center {
     text-align: center;
 }
+
 .loader {
     border: 1px solid #f3f3f3;
     border-top: 1px solid #3498db;

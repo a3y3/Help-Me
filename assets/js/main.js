@@ -132,10 +132,7 @@ $(function () {
                     if (i === 1) {
                         let btn = document.createElement("button");
                         btn.append(results[i]);
-                        let access_link = proxy_url;
-                        access_link += "?path=";
-                        access_link += "/Application/Tabs?orgId=" + id;
-                        btn.setAttribute("data-href", access_link);
+                        btn.setAttribute("data-orgid", id);
                         btn.setAttribute("href", "#");
                         $(btn).addClass("link-get-tabs");
                         $(btn).addClass("btn btn-link");
@@ -175,16 +172,16 @@ $(function () {
         function addTabsListener() {
             $(document).on("click", ".link-get-tabs", function (e) {
                 e.preventDefault();
-                let orgLink = $(this).data("href");
-                showDetails(orgLink);
+                let id = $(this).data("orgid");
+                showDetails(id);
             });
         }
 
-        function showDetails(orgLink) {
+        function showDetails(id) {
             //Clear results
             $("#search-results").children().remove();
             addDetailsBoilerplate();
-            getTabs(orgLink);
+            getTabs(id);
         }
 
         function addDetailsBoilerplate() {
@@ -198,20 +195,22 @@ $(function () {
             detailsUI.append(div);
         }
 
-        function getTabs(url) {
+        function getTabs(id) {
+            let access_link = proxy_url;
+            access_link += "?path=";
+            access_link += "/Application/Tabs?orgId=" + id;
             $.ajax({
-                "url": url,
+                "url": access_link,
                 success: function (data) {
-                    console.log(data);
-                    buildTabs(data);
+                    buildTabs(data, id);
                 }
             });
         }
 
-        function buildTabs(data) {
+        function buildTabs(data, id) {
             let ul = getUlForData(data);
             $("#tabs").append(ul);
-            let arrayOfDivs = getDivContentFordata(data);
+            let arrayOfDivs = getDivContentFordata(data, id);
             arrayOfDivs.forEach(function (div) {
                 $("#tabs").append(div);
             });
@@ -222,31 +221,81 @@ $(function () {
             let ul = document.createElement("ul");
             $("row", data).each(function () {
                 let organization = document.createTextNode($(this).text());
-    
+
                 let link = document.createElement("a");
                 link.setAttribute("href", "#" + $(this).text());
                 link.append(organization);
-    
+
                 let li = document.createElement("li");
                 li.append(link);
-    
+
                 ul.append(li);
             });
             return ul;
         }
 
-        function getDivContentFordata(data) {
+        function getDivContentFordata(data, id) {
             let divs = [];
             $("row", data).each(function () {
                 let org = $(this).text();
                 let div = document.createElement("div");
                 div.setAttribute("id", org);
-                let content = document.createTextNode(`You are viewing data for ${org}`);   //Modify this later with AJAX; not required for this hw
-                div.append(content);
-    
+                let contentDiv = document.createElement("div");
+                if (org === "General") {
+                    contentDiv.setAttribute("id", "content-general");
+                    let name = document.createElement("p");
+                    name.setAttribute("id", "p-general-name");
+                    let email = document.createElement("p");
+                    email.setAttribute("id", "p-general-email");
+                    let website = document.createElement("p");
+                    website.setAttribute("id", "p-general-website");
+                    let description = document.createElement("p");
+                    description.setAttribute("id", "p-general-description");
+                    let nummembers = document.createElement("p");
+                    nummembers.setAttribute("id", "p-general-nummembers");
+                    let numcalls = document.createElement("p");
+                    numcalls.setAttribute("id", "p-general-numcalls");
+                    let serviceArea = document.createElement("p");
+                    serviceArea.setAttribute("id", "p-general-serviceArea");
+                    let contents = [name, email, website, description, nummembers, numcalls, serviceArea];
+                    $(contents).each(function(i){
+                        contentDiv.append(contents[i]);
+                    });
+                    setGeneralInfo(id);
+                }
+                div.append(contentDiv);
+
                 divs.push(div);
             });
             return divs;
+        }
+
+        function setGeneralInfo(id) {
+            let url = `/${id}/General`;
+            $.ajax({
+                "url": proxy_url,
+                "data": { path: url },
+                "success": function (data) {
+                    console.log(data);
+                    let name = $("name", data).text(),
+                        email = $("email", data).text(),
+                        website = $("website", data).text(),
+                        description = $("description", data).text(),
+                        nummembers = $("nummembers", data).text(),
+                        numcalls = $("numcalls", data).text(),
+                        serviceArea = $("serviceArea", data).text();
+                    $("#p-general-name").html(`Name: ${name}`);
+                    $("#p-general-email").html(`Email: <a class="link-blue" href=mailto:${email}>${email}</a>`);
+                    $("#p-general-website").html(`Website: <a class="link-blue" href=${website}>${website}</a>`);
+                    $("#p-general-description").html(`Description: ${description}`);
+                    $("#p-general-nummembers").html(`Number of Members: ${nummembers}`);
+                    $("#p-general-numcalls").html(`Number of calls last year: ${numcalls}`);
+                    $("#p-general-serviceArea").html(`Service Area: ${serviceArea}`);
+                },
+                "error": function (xhr, data, err) {
+                    console.error(`Error:`, xhr, data, err);
+                }
+            });
         }
 
         return {
