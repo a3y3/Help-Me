@@ -275,6 +275,10 @@ $(function () {
                     contentDiv.setAttribute("id", "div-content-facilities");
                     setFacilitiesInfo(id, contentDiv);
                 }
+                else if (org === "Physicians") {
+                    contentDiv.setAttribute("id", "div-content-physicians");
+                    setPhysiciansInfo(id, contentDiv);
+                }
                 divs.push(div);
             });
             return divs;
@@ -349,7 +353,7 @@ $(function () {
 
         function setFacilitiesInfo(id, contentDiv) {
             let url = `/${id}/Facilities`;
-            let table = document.createElement("table");
+            let table = document.createElement("table table-striped");
             $(table).addClass("table");
             contentDiv.append(table);
             let thead = document.createElement("thead");
@@ -379,6 +383,51 @@ $(function () {
                         tr.append(td);
                         td = document.createElement("td");
                         td.append(description);
+                        tr.append(td);
+                        tbody.append(tr);
+                    });
+                },
+                "error": function (xhr, data, err) {
+                    console.error(`Error:`, xhr, data, err);
+                }
+            });
+        }
+
+        function setPhysiciansInfo(id, contentDiv) {
+            let url = `/${id}/Physicians`;
+            let table = document.createElement("table table-striped");
+            $(table).addClass("table");
+            contentDiv.append(table);
+            let thead = document.createElement("thead");
+            table.append(thead);
+            let headers = ["Name", "License", "Contact"];
+            $.each(headers, function (index, header) {
+                let th = document.createElement("th");
+                thead.append(th);
+                th.append(header);
+            });
+            let tbody = document.createElement("tbody");
+            table.append(tbody);
+            $.ajax({
+                "url": proxy_url,
+                "data": { path: url },
+                "success": function (data) {
+                    $("physician", data).each(function (i) {
+                        let tr = document.createElement("tr");
+                        let fName = $("fName", $("physician", data)[i]).text();
+                        let mName = $("mName", $("physician", data)[i]).text();
+                        let lName = $("lName", $("physician", data)[i]).text();
+                        let name = fName + " " + mName + " " + lName;
+                        let license = $("license", $("physician", data)[i]).text();
+                        let phone = $("phone", $("physician", data)[i]).text();
+                        let td = document.createElement("td");
+                        td.append(name);
+                        tr.append(td);
+                        td = document.createElement("td");
+                        td.append(license)
+                        tr.append(td);
+                        td = document.createElement("td");
+                        td.append(phone);
                         tr.append(td);
                         tbody.append(tr);
                     });
