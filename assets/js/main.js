@@ -264,20 +264,19 @@ $(function () {
                     setGeneralInfo(id, contentDiv);
                 }
                 else if (org === "Treatment") {
-                    contentDiv.setAttribute("id", "div-content-treatment");
                     setTreatmentInfo(id, contentDiv);
                 }
                 else if (org === "Training") {
-                    contentDiv.setAttribute("id", "div-content-training");
                     setTrainingInfo(id, contentDiv);
                 }
                 else if (org === "Facilities") {
-                    contentDiv.setAttribute("id", "div-content-facilities");
                     setFacilitiesInfo(id, contentDiv);
                 }
                 else if (org === "Physicians") {
-                    contentDiv.setAttribute("id", "div-content-physicians");
                     setPhysiciansInfo(id, contentDiv);
+                }
+                else if (org === "People") {
+                    setPeopleInfo(id, contentDiv);
                 }
                 divs.push(div);
             });
@@ -353,8 +352,8 @@ $(function () {
 
         function setFacilitiesInfo(id, contentDiv) {
             let url = `/${id}/Facilities`;
-            let table = document.createElement("table table-striped");
-            $(table).addClass("table");
+            let table = document.createElement("table");
+            $(table).addClass("table table-striped");
             contentDiv.append(table);
             let thead = document.createElement("thead");
             table.append(thead);
@@ -395,8 +394,8 @@ $(function () {
 
         function setPhysiciansInfo(id, contentDiv) {
             let url = `/${id}/Physicians`;
-            let table = document.createElement("table table-striped");
-            $(table).addClass("table");
+            let table = document.createElement("table");
+            $(table).addClass("table table-striped");
             contentDiv.append(table);
             let thead = document.createElement("thead");
             table.append(thead);
@@ -435,6 +434,77 @@ $(function () {
                 "error": function (xhr, data, err) {
                     console.error(`Error:`, xhr, data, err);
                 }
+            });
+        }
+
+        function setPeopleInfo(id, contentDiv) {
+            let url = `/${id}/People`;
+            let contentDisplayer = document.createElement("div");
+
+            $.ajax({
+                "url": proxy_url,
+                "data": { path: url },
+                "success": function (data) {
+                    let select = getSelectForPeople(data, contentDisplayer);
+                    contentDiv.append(select);
+                    contentDiv.append(contentDisplayer);
+                },
+                "error": function (xhr, data, err) {
+                    console.error(`Error:`, xhr, data, err);
+                }
+            });
+        }
+
+        function getSelectForPeople(data, contentDisplayer) {
+            let select = document.createElement("select");
+            $("site", data).each(function (i) {
+                let site = $("site", data)[i];
+                let siteId = $(site).attr("siteId");
+                let siteAddr = $(site).attr("address");
+                let option = document.createElement("option");
+                option.append(siteAddr);
+                $(option).attr("value", siteId);
+                select.append(option);
+            });
+            changePeopleData(1, data, contentDisplayer);
+            $(select).on("change", function () {
+                changePeopleData(this.value, data, contentDisplayer)
+            });
+            return select;
+        }
+
+        function changePeopleData(siteId, data, contentDisplayer) {
+            $(contentDisplayer).children().remove();
+            let peopleData = $(data).find(`site[siteId=${siteId}]`);
+
+            let table = document.createElement("table");
+            $(table).addClass("table table-striped");
+            contentDisplayer.append(table);
+            let thead = document.createElement("thead");
+            table.append(thead);
+            let headers = ["Name", "Role"];
+            $.each(headers, function (index, header) {
+                let th = document.createElement("th");
+                thead.append(th);
+                th.append(header);
+            });
+            let tbody = document.createElement("tbody");
+            table.append(tbody);
+
+            $("person", peopleData).each(function (i) {
+                let fname = $("fName", $("person", peopleData)[i]).text();
+                let mName = $("mName", $("person", peopleData)[i]).text();
+                let lName = $("lName", $("person", peopleData)[i]).text();
+                let name = fname + " " + mName + " " + lName;
+                let role = $("role", $("person", peopleData)[i]).text();
+                let tr = document.createElement("tr");
+                let td = document.createElement("td");
+                td.append(name);
+                tr.append(td);
+                td = document.createElement("td");
+                td.append(role);
+                tr.append(td);
+                tbody.append(tr);
             });
         }
 
