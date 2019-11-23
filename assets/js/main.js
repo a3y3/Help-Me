@@ -3,6 +3,9 @@ $(function () {
     let helpMe = (function () {
         let proxy_url;
 
+        /**
+         * Fetched orgTypes to display in the main select.
+         */
         function setOrgTypes() {
             let url = `/OrgTypes`;
             $().getAjaxdata(function (data) {
@@ -14,6 +17,10 @@ $(function () {
             }, proxy_url, { path: url })
         }
 
+        /**
+         * Creates and returns an object containing key value pairs of the form
+         * id -> {name of org}
+         */
         function parseOrgTypes(xmlData) {
             let orgTypes = {}
             $("row", xmlData).each(function (data) {
@@ -24,6 +31,9 @@ $(function () {
             return orgTypes;
         }
 
+        /**
+         * Used to fill cities and states (because of similiar xml data, to avoid code duplication)
+         */
         function setSelectSingle(url, select, field) {
             $().getAjaxdata(function (data) {
                 let fields = parseXmlDataSingle(data, field);
@@ -43,6 +53,7 @@ $(function () {
             return states;
         }
 
+
         function setStates() {
             let url = `/States`;
             let select = $("#select-states");
@@ -57,6 +68,10 @@ $(function () {
             setSelectSingle(url, select, fieldName);
         }
 
+        /**
+         * Creates and fills the main form with data. Also configures the 
+         * Reset button.
+         */
         function initForm() {
             setOrgTypes();
             setStates();
@@ -66,6 +81,10 @@ $(function () {
             });
         }
 
+        /**
+         * Captures the input for search and calls {@code showInTable()} for
+         * displaying search results.
+         */
         function handleSearch() {
             $("#form-search").on("submit", function (event) {
                 event.preventDefault();
@@ -75,8 +94,6 @@ $(function () {
                 let h3 = document.createElement("h3");
                 h3.append(document.createTextNode("Search Results"));
                 $("#search-results").append(h3);
-
-                
 
                 let params = $(this).serialize();
                 let searchUrl = "/Organizations";
@@ -91,13 +108,16 @@ $(function () {
             });
         }
 
+        /**
+         * Parses the XML data to display it in the table.
+         */
         function showInTable(data) {
             let table = getTable();
             let tbody = document.createElement("tbody");
             table.append(tbody);
             $("row", data).each(function () {
                 let tr = document.createElement("tr");
-                let results = []
+                let results = [] // makes it easier for adding the data to the table
                 let id = $("OrganizationID", this).text();
                 results.push($("type", this).text());
                 results.push($("Name", this).text());
@@ -148,6 +168,11 @@ $(function () {
             return table;
         }
 
+        /**
+         * Adds a click listener on the DOM. The listener can't be added directly
+         * as the buttons are generated dynamically and may not exist when this 
+         * method executes. 
+         */
         function addTabsListener() {
             $(document).on("click", ".link-get-tabs", function (e) {
                 e.preventDefault();
@@ -183,6 +208,11 @@ $(function () {
             }, access_link, {})
         }
 
+        /**
+         * jQuery UI expects data to be in a very specific format before tabs()
+         * can be called. This function arranges it in the format (list of divs)
+         * and then displays the tabs.
+         */
         function buildTabs(data, id) {
             let ul = getUlForData(data);
             $("#tabs").append(ul);
@@ -210,6 +240,17 @@ $(function () {
             return ul;
         }
 
+        /**
+         * Fetches data for each and every organization tab.
+         * Note that to make the user experience as smooth and fluid as possible
+         * the function creates div and attaches them to DOM quickly, thus giving
+         * the user the impresssion of responsiveness quickly. The divs are then
+         * populated with the asynchronous data received from the xhr requests.
+         * 
+         * A side effect of this is that tabs will be empty when clicked, but
+         * these should get populated fairly quickly, thus ensuring a quick 
+         * response. 
+         */
         function getDivContentFordata(data, id) {
             let divs = [];
             $("row", data).each(function () {

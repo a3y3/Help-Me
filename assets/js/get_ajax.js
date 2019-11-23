@@ -12,5 +12,4 @@
             }
         });
     };
-    // console.log("Reached here", $().getAjaxdata);
 }(jQuery));
