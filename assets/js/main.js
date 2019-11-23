@@ -5,20 +5,13 @@ $(function () {
 
         function setOrgTypes() {
             let url = `/OrgTypes`;
-            $.ajax({
-                "url": proxy_url,
-                "data": { path: url },
-                "success": function (data) {
-                    let orgTypes = parseOrgTypes(data);
-                    let select = $("#select-orgType");
-                    $.each(orgTypes, function (key, value) {
-                        select.append($("<option></option>").attr("value", value).text(value));
-                    });
-                },
-                "error": function (xhr, data, err) {
-                    console.error(`Error:`, xhr, data, err);
-                }
-            });
+            $().getAjaxdata(function (data) {
+                let orgTypes = parseOrgTypes(data);
+                let select = $("#select-orgType");
+                $.each(orgTypes, function (key, value) {
+                    select.append($("<option></option>").attr("value", value).text(value));
+                });
+            }, proxy_url, { path: url })
         }
 
         function parseOrgTypes(xmlData) {
@@ -32,19 +25,12 @@ $(function () {
         }
 
         function setSelectSingle(url, select, field) {
-            $.ajax({
-                "url": proxy_url,
-                "data": { path: url },
-                "success": function (data) {
-                    let fields = parseXmlDataSingle(data, field);
-                    $.each(fields, function (i) {
-                        select.append($("<option></option>").attr("value", fields[i]).text(fields[i]));
-                    });
-                },
-                "error": function (xhr, data, err) {
-                    console.error(`Error:`, xhr, data, err);
-                }
-            });
+            $().getAjaxdata(function (data) {
+                let fields = parseXmlDataSingle(data, field);
+                $.each(fields, function (i) {
+                    select.append($("<option></option>").attr("value", fields[i]).text(fields[i]));
+                });
+            }, proxy_url, { path: url });
         }
 
 
@@ -90,25 +76,18 @@ $(function () {
                 h3.append(document.createTextNode("Search Results"));
                 $("#search-results").append(h3);
 
+                
+
                 let params = $(this).serialize();
                 let searchUrl = "/Organizations";
-                $.ajax({
-                    "url": proxy_url,
-                    "data": { "path": searchUrl + "?" + params },
-                    "success": function (data) {
-                        if ($("row", data).length != 0) {
-                            showInTable(data);
-
-                        }
-                        else {
-                            let div = $("#search-results");
-                            addNotFound(div);
-                        }
-                    },
-                    "error": function (xhr, data, err) {
-                        console.error(`Error:`, xhr, data, err);
+                $().getAjaxdata(function (data) {
+                    if ($("row", data).length != 0) {
+                        showInTable(data);
+                    } else {
+                        let div = $("#search-results");
+                        addNotFound(div);
                     }
-                });
+                }, proxy_url, { "path": searchUrl + "?" + params })
             });
         }
 
@@ -199,12 +178,9 @@ $(function () {
             let access_link = proxy_url;
             access_link += "?path=";
             access_link += "/Application/Tabs?orgId=" + id;
-            $.ajax({
-                "url": access_link,
-                success: function (data) {
-                    buildTabs(data, id);
-                }
-            });
+            $().getAjaxdata(function (data) {
+                buildTabs(data, id);
+            }, access_link, {})
         }
 
         function buildTabs(data, id) {
@@ -288,69 +264,49 @@ $(function () {
 
         function setGeneralInfo(id, contentDiv) {
             let url = `/${id}/General`;
-            $.ajax({
-                "url": proxy_url,
-                "data": { path: url },
-                "success": function (data) {
-                    let name = $("name", data).text(),
-                        email = $("email", data).text(),
-                        website = $("website", data).text(),
-                        description = $("description", data).text(),
-                        nummembers = $("nummembers", data).text(),
-                        numcalls = $("numcalls", data).text(),
-                        serviceArea = $("serviceArea", data).text();
-                    $("#p-general-name").html(`Name: ${name}`);
-                    $("#p-general-email").html(`Email: <a class="link-blue" href=mailto:${email}>${email}</a>`);
-                    $("#p-general-website").html(`Website: <a class="link-blue" href=${website}>${website}</a>`);
-                    $("#p-general-description").html(`Description: ${description}`);
-                    $("#p-general-nummembers").html(`Number of Members: ${nummembers}`);
-                    $("#p-general-numcalls").html(`Number of calls last year: ${numcalls}`);
-                    $("#p-general-serviceArea").html(`Service Area: ${serviceArea}`);
-                },
-                "error": function (xhr, data, err) {
-                    console.error(`Error:`, xhr, data, err);
-                }
-            });
+            $().getAjaxdata(function (data) {
+                let name = $("name", data).text(),
+                    email = $("email", data).text(),
+                    website = $("website", data).text(),
+                    description = $("description", data).text(),
+                    nummembers = $("nummembers", data).text(),
+                    numcalls = $("numcalls", data).text(),
+                    serviceArea = $("serviceArea", data).text();
+                $("#p-general-name").html(`Name: ${name}`);
+                $("#p-general-email").html(`Email: <a class="link-blue" href=mailto:${email}>${email}</a>`);
+                $("#p-general-website").html(`Website: <a class="link-blue" href=${website}>${website}</a>`);
+                $("#p-general-description").html(`Description: ${description}`);
+                $("#p-general-nummembers").html(`Number of Members: ${nummembers}`);
+                $("#p-general-numcalls").html(`Number of calls last year: ${numcalls}`);
+                $("#p-general-serviceArea").html(`Service Area: ${serviceArea}`);
+            }, proxy_url, { path: url });
+
         }
 
         function setTreatmentInfo(id, contentDiv) {
             let url = `/${id}/Treatments`;
-            $.ajax({
-                "url": proxy_url,
-                "data": { path: url },
-                "success": function (data) {
-                    $("treatment", data).each(function (i) {
-                        let type = $("type", $("treatment", data)[i]).text()
-                        let abbreviation = $("abbreviation", $("treatment", data)[i]).text()
-                        let p = document.createElement("p");
-                        $(p).html(`${type}: <b>${abbreviation}</b>`);
-                        contentDiv.append(p);
-                    });
-                },
-                "error": function (xhr, data, err) {
-                    console.error(`Error:`, xhr, data, err);
-                }
-            });
+            $().getAjaxdata(function (data) {
+                $("treatment", data).each(function (i) {
+                    let type = $("type", $("treatment", data)[i]).text()
+                    let abbreviation = $("abbreviation", $("treatment", data)[i]).text()
+                    let p = document.createElement("p");
+                    $(p).html(`${type}: <b>${abbreviation}</b>`);
+                    contentDiv.append(p);
+                });
+            }, proxy_url, { path: url });
         }
 
         function setTrainingInfo(id, contentDiv) {
             let url = `/${id}/Training`;
-            $.ajax({
-                "url": proxy_url,
-                "data": { path: url },
-                "success": function (data) {
-                    $("training", data).each(function (i) {
-                        let type = $("type", $("training", data)[i]).text();
-                        let abbreviation = $("abbreviation", $("training", data)[i]).text();
-                        let p = document.createElement("p");
-                        $(p).html(`${type}: <b>${abbreviation}</b>`);
-                        contentDiv.append(p);
-                    });
-                },
-                "error": function (xhr, data, err) {
-                    console.error(`Error:`, xhr, data, err);
-                }
-            });
+            $().getAjaxdata(function (data) {
+                $("training", data).each(function (i) {
+                    let type = $("type", $("training", data)[i]).text();
+                    let abbreviation = $("abbreviation", $("training", data)[i]).text();
+                    let p = document.createElement("p");
+                    $(p).html(`${type}: <b>${abbreviation}</b>`);
+                    contentDiv.append(p);
+                });
+            }, proxy_url, { path: url });
         }
 
         function setFacilitiesInfo(id, contentDiv) {
@@ -368,31 +324,25 @@ $(function () {
             });
             let tbody = document.createElement("tbody");
             table.append(tbody);
-            $.ajax({
-                "url": proxy_url,
-                "data": { path: url },
-                "success": function (data) {
-                    $("facility", data).each(function (i) {
-                        let tr = document.createElement("tr");
-                        let type = $("type", $("facility", data)[i]).text();
-                        let quantity = $("quantity", $("facility", data)[i]).text();
-                        let description = $("description", $("facility", data)[i]).text();
-                        let td = document.createElement("td");
-                        td.append(type);
-                        tr.append(td);
-                        td = document.createElement("td");
-                        td.append(quantity)
-                        tr.append(td);
-                        td = document.createElement("td");
-                        td.append(description);
-                        tr.append(td);
-                        tbody.append(tr);
-                    });
-                },
-                "error": function (xhr, data, err) {
-                    console.error(`Error:`, xhr, data, err);
-                }
-            });
+
+            $().getAjaxdata(function (data) {
+                $("facility", data).each(function (i) {
+                    let tr = document.createElement("tr");
+                    let type = $("type", $("facility", data)[i]).text();
+                    let quantity = $("quantity", $("facility", data)[i]).text();
+                    let description = $("description", $("facility", data)[i]).text();
+                    let td = document.createElement("td");
+                    td.append(type);
+                    tr.append(td);
+                    td = document.createElement("td");
+                    td.append(quantity)
+                    tr.append(td);
+                    td = document.createElement("td");
+                    td.append(description);
+                    tr.append(td);
+                    tbody.append(tr);
+                });
+            }, proxy_url, { path: url });
         }
 
         function setPhysiciansInfo(id, contentDiv) {
@@ -410,52 +360,39 @@ $(function () {
             });
             let tbody = document.createElement("tbody");
             table.append(tbody);
-            $.ajax({
-                "url": proxy_url,
-                "data": { path: url },
-                "success": function (data) {
-                    $("physician", data).each(function (i) {
-                        let tr = document.createElement("tr");
-                        let fName = $("fName", $("physician", data)[i]).text();
-                        let mName = $("mName", $("physician", data)[i]).text();
-                        let lName = $("lName", $("physician", data)[i]).text();
-                        let name = fName + " " + mName + " " + lName;
-                        let license = $("license", $("physician", data)[i]).text();
-                        let phone = $("phone", $("physician", data)[i]).text();
-                        let td = document.createElement("td");
-                        td.append(name);
-                        tr.append(td);
-                        td = document.createElement("td");
-                        td.append(license)
-                        tr.append(td);
-                        td = document.createElement("td");
-                        td.append(phone);
-                        tr.append(td);
-                        tbody.append(tr);
-                    });
-                },
-                "error": function (xhr, data, err) {
-                    console.error(`Error:`, xhr, data, err);
-                }
-            });
+
+            $().getAjaxdata(function (data) {
+                $("physician", data).each(function (i) {
+                    let tr = document.createElement("tr");
+                    let fName = $("fName", $("physician", data)[i]).text();
+                    let mName = $("mName", $("physician", data)[i]).text();
+                    let lName = $("lName", $("physician", data)[i]).text();
+                    let name = fName + " " + mName + " " + lName;
+                    let license = $("license", $("physician", data)[i]).text();
+                    let phone = $("phone", $("physician", data)[i]).text();
+                    let td = document.createElement("td");
+                    td.append(name);
+                    tr.append(td);
+                    td = document.createElement("td");
+                    td.append(license)
+                    tr.append(td);
+                    td = document.createElement("td");
+                    td.append(phone);
+                    tr.append(td);
+                    tbody.append(tr);
+                });
+            }, proxy_url, { path: url });
         }
 
         function setPeopleInfo(id, contentDiv) {
             let url = `/${id}/People`;
             let contentDisplayer = document.createElement("div");
 
-            $.ajax({
-                "url": proxy_url,
-                "data": { path: url },
-                "success": function (data) {
-                    let select = getSelectForPeople(data, contentDisplayer);
-                    contentDiv.append(select);
-                    contentDiv.append(contentDisplayer);
-                },
-                "error": function (xhr, data, err) {
-                    console.error(`Error:`, xhr, data, err);
-                }
-            });
+            $().getAjaxdata(function (data) {
+                let select = getSelectForPeople(data, contentDisplayer);
+                contentDiv.append(select);
+                contentDiv.append(contentDisplayer);
+            }, proxy_url, { path: url });
         }
 
         function getSelectForPeople(data, contentDisplayer) {
@@ -531,21 +468,15 @@ $(function () {
             $(mapDiv).addClass("col-12 col-md-7");
             rowDiv.append(textInfo);
             rowDiv.append(mapDiv);
-            $.ajax({
-                "url": proxy_url,
-                "data": { path: url },
-                "success": function (data) {
-                    let map = L.map('mapid');
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    }).addTo(map);
-                    let select = getSelectForLocations(data, textInfo, map);
-                    contentDisplayer.prepend(select);
-                },
-                "error": function (xhr, data, err) {
-                    console.error(`Error:`, xhr, data, err);
-                }
-            });
+
+            $().getAjaxdata(function (data) {
+                let map = L.map('mapid');
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                let select = getSelectForLocations(data, textInfo, map);
+                contentDisplayer.prepend(select);
+            }, proxy_url, { path: url })
         }
 
         function getSelectForLocations(data, textInfo, map) {
@@ -555,7 +486,6 @@ $(function () {
             $(option).attr("value", "");
             select.append(option);
             let location = $("location", data);
-            console.log(data);
             location.each(function (i) {
                 let type = $("type", location[i]).text();
                 let siteId = $("siteId", location[i]).text();
