@@ -278,6 +278,9 @@ $(function () {
                 else if (org === "People") {
                     setPeopleInfo(id, contentDiv);
                 }
+                else if (org === "Locations") {
+                    setLocationInfo(id, contentDiv);
+                }
                 divs.push(div);
             });
             return divs;
@@ -505,6 +508,96 @@ $(function () {
                 td.append(role);
                 tr.append(td);
                 tbody.append(tr);
+            });
+        }
+
+        function setLocationInfo(id, contentDiv) {
+            let url = `/${id}/Locations`;
+            let contentDisplayer = document.createElement("div");
+            $(contentDisplayer).addClass("contentDisplayer");
+            contentDiv.append(contentDisplayer);
+            let custom = document.createElement("div");
+            $(custom).addClass("row");
+            contentDiv.append(custom);
+            contentDisplayer.append(custom);
+
+            let rowDiv = document.createElement("div");
+            $(rowDiv).addClass("row");
+            contentDisplayer.append(rowDiv);
+            let textInfo = document.createElement("div");
+            $(textInfo).addClass("col-12 col-md-5");
+            let mapDiv = document.createElement("div");
+            $(mapDiv).attr("id", "mapid");
+            $(mapDiv).addClass("col-12 col-md-7");
+            rowDiv.append(textInfo);
+            rowDiv.append(mapDiv);
+            $.ajax({
+                "url": proxy_url,
+                "data": { path: url },
+                "success": function (data) {
+                    let map = L.map('mapid');
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(map);
+                    let select = getSelectForLocations(data, textInfo, map);
+                    contentDisplayer.prepend(select);
+                },
+                "error": function (xhr, data, err) {
+                    console.error(`Error:`, xhr, data, err);
+                }
+            });
+        }
+
+        function getSelectForLocations(data, textInfo, map) {
+            let select = document.createElement("select");
+            let option = document.createElement("option");
+            option.append(document.createTextNode("Select Location Type"));
+            $(option).attr("value", "");
+            select.append(option);
+            let location = $("location", data);
+            console.log(data);
+            location.each(function (i) {
+                let type = $("type", location[i]).text();
+                let siteId = $("siteId", location[i]).text();
+                let option = document.createElement("option");
+                option.append(type);
+                $(option).attr("value", siteId);
+                select.append(option);
+            });
+            $(select).on("change", function () {
+                changeLocationData(this.value, data, textInfo, map);
+            });
+            return select;
+        }
+
+        function changeLocationData(siteId, data, textInfo, map) {
+            $(textInfo).children().remove();
+            let location = $("location", data);
+            location.each(function (i) {
+                let id = $("siteId", location[i]).text();
+                if (id === siteId) {
+                    let infos = {
+                        type: $("type", location[i]).text(),
+                        address1: $("address1", location[i]).text(),
+                        address2: $("address2", location[i]).text(),
+                        city: $("city", location[i]).text(),
+                        state: $("state", location[i]).text(),
+                        zip: $("zip", location[i]).text(),
+                        phone: $("phone", location[i]).text(),
+                        ttyphone: $("ttyphone", location[i]).text(),
+                        fax: $("fax", location[i]).text(),
+                        latitude: $("latitude", location[i]).text(),
+                        longitude: $("longitude", location[i]).text()
+                    };
+                    $.each(infos, function (key, value) {
+                        let p = document.createElement("p");
+                        $(p).html(`${key}: <b>${value}</b>`);
+                        textInfo.append(p);
+                    });
+                    console.log(`"${infos.latitude}"`, `"${infos.longitude}"`);
+                    map.setView([infos.latitude, infos.longitude], 13);
+                    L.marker([infos.latitude, infos.longitude]).addTo(map).openPopup();
+                }
             });
         }
 
